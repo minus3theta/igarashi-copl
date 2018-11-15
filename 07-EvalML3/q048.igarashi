@@ -1,0 +1,70 @@
+def $e1 = fun f -> fun g -> fun x -> f (g x);
+def $v1 = ()[fun f -> fun g -> fun x -> f (g x)];
+def $env1 = compose = $v1;
+def $e2 = let p = fun x -> x * x in let q = fun x -> x + 4 in compose p q 4;
+def $e3 = fun x -> x * x;
+def $v3 = ($env1)[fun x -> x * x];
+def $env4 = $env1, p = $v3;
+def $e4 = let q = fun x -> x + 4 in compose p q 4;
+def $v4 = ($env4)[fun x -> x + 4];
+def $env5 = $env4, q = $v4;
+def $v6 = (f = $v3)[fun g -> fun x -> f (g x)];
+def $env6 = f = $v3, g = $v4;
+def $v5 = ($env6)[fun x -> f (g x)];
+def $env7 = $env6, x = 4;
+def $v7 = 8;
+
+|- let compose = fun f -> fun g -> fun x -> f (g x) in 
+   let p = fun x -> x * x in
+   let q = fun x -> x + 4 in
+   compose p q 4 
+  evalto 64 by E-Let {
+  |- $e1 evalto $v1 by E-Fun {};
+  $env1 |- $e2 evalto 64 by E-Let {
+    $env1 |- $e3 evalto $v3 by E-Fun {};
+    $env4 |- $e4 evalto 64 by E-Let {
+      $env4 |- fun x -> x + 4 evalto $v4 by E-Fun {};
+      $env5 |- compose p q 4 evalto 64 by E-App {
+        $env5 |- compose p q evalto $v5 by E-App {
+          $env5 |- compose p evalto $v6 by E-App {
+            $env5 |- compose evalto $v1 by E-Var2 {
+              $env4 |- compose evalto $v1 by E-Var2 {
+                $env1 |- compose evalto $v1 by E-Var1 {}
+              }
+            };
+            $env5 |- p evalto $v3 by E-Var2 {
+              $env4 |- p evalto $v3 by E-Var1 {}
+            };
+            f = $v3 |- fun g -> fun x -> f (g x) evalto $v6 by E-Fun {}
+          };
+          $env5 |- q evalto $v4 by E-Var1 {};
+          $env6 |- fun x -> f (g x) evalto $v5 by E-Fun {}
+        };
+        $env5 |- 4 evalto 4 by E-Int {};
+        $env7 |- f (g x) evalto 64 by E-App {
+          $env7 |- f evalto $v3 by E-Var2 {
+            $env6 |- f evalto $v3 by E-Var2 {
+              f = $v3 |- f evalto $v3 by E-Var1 {}
+            }
+          };
+          $env7 |- g x evalto $v7 by E-App {
+            $env7 |- g evalto $v4 by E-Var2 {
+              $env6 |- g evalto $v4 by E-Var1 {}
+            };
+            $env7 |- x evalto 4 by E-Var1 {};
+            $env4, x = 4 |- x + 4 evalto 8 by E-Plus {
+              $env4, x = 4 |- x evalto 4 by E-Var1 {};
+              $env4, x = 4 |- 4 evalto 4 by E-Int {};
+              4 plus 4 is 8 by B-Plus {}
+            }
+          };
+          $env1, x = 8 |- x * x evalto 64 by E-Times {
+            $env1, x = 8 |- x evalto 8 by E-Var1 {};
+            $env1, x = 8 |- x evalto 8 by E-Var1 {};
+            8 times 8 is 64 by B-Times {}
+          }
+        }
+      }
+    }
+  }
+}
