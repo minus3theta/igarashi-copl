@@ -1,0 +1,91 @@
+def $v1 = ()[fun f -> fun x -> f (f x)];
+def $env1 = twice = $v1;
+def $env2 = f = $v1, x = ($env1)[fun x -> x * x];
+def $v3 = (f = $v1)[fun x -> f (f x)];
+def $v6 = ($env1)[fun x -> x * x];
+def $env4 = f = $v6;
+def $v2 = ($env4)[fun x -> f (f x)];
+def $v4 = (f = $v2)[fun x -> f (f x)];
+def $env5 = f = $v2, x = 2;
+def $env6 = $env4, x = 2;
+
+|- let twice = fun f -> fun x -> f (f x) in twice twice (fun x -> x * x) 2 evalto 65536 by E-Let {
+  |- fun f -> fun x -> f (f x) evalto $v1 by E-Fun {};
+  $env1 |- twice twice (fun x -> x * x) 2 evalto 65536 by E-App {
+    $env1 |- twice twice (fun x -> x * x) evalto $v4 by E-App {
+      $env1 |- twice twice evalto $v3 by E-App {
+        $env1 |- twice evalto $v1 by E-Var1 {};
+        $env1 |- twice evalto $v1 by E-Var1 {};
+        f = $v1 |- fun x -> f (f x) evalto $v3 by E-Fun {}
+      };
+      $env1 |- fun x -> x * x evalto ($env1)[fun x -> x * x] by E-Fun {};
+      $env2 |- f (f x) evalto $v4 by E-App {
+        $env2 |- f evalto $v1 by E-Var2 {
+          f = $v1 |- f evalto $v1 by E-Var1 {}
+        };
+        $env2 |- f x evalto $v2 by E-App {
+          $env2 |- f evalto $v1 by E-Var2 {
+            f = $v1 |- f evalto $v1 by E-Var1 {}
+          };
+          $env2 |- x evalto ($env1)[fun x -> x * x] by E-Var1 {};
+          $env4 |- fun x -> f (f x) evalto $v2 by E-Fun {}
+        };
+        f = $v2 |- fun x -> f (f x) evalto $v4 by E-Fun {}
+      }
+    };
+    $env1 |- 2 evalto 2 by E-Int {};
+    $env5 |- f (f x) evalto 65536 by E-App {
+      $env5 |- f evalto $v2 by E-Var2 {
+        f = $v2 |- f evalto $v2 by E-Var1 {}
+      };
+      $env5 |- f x evalto 16 by E-App {
+        $env5 |- f evalto $v2 by E-Var2 {
+          f = $v2 |- f evalto $v2 by E-Var1 {}
+        };
+        $env5 |- x evalto 2 by E-Var1 {};
+        $env6 |- f (f x) evalto 16 by E-App {
+          $env6 |- f evalto $v6 by E-Var2 {
+            $env4 |- f evalto $v6 by E-Var1 {}
+          };
+          $env6 |- f x evalto 4 by E-App {
+            $env6 |- f evalto $v6 by E-Var2 {
+              $env4 |- f evalto $v6 by E-Var1 {}
+            };
+            $env6 |- x evalto 2 by E-Var1 {};
+            $env1, x = 2 |- x * x evalto 4 by E-Times {
+              $env1, x = 2 |- x evalto 2 by E-Var1 {};
+              $env1, x = 2 |- x evalto 2 by E-Var1 {};
+              2 times 2 is 4 by B-Times {}
+            }
+          };
+          $env1, x = 4 |- x * x evalto 16 by E-Times {
+            $env1, x = 4 |- x evalto 4 by E-Var1 {};
+            $env1, x = 4 |- x evalto 4 by E-Var1 {};
+            4 times 4 is 16 by B-Times {}
+          }
+        }
+      };
+      $env4, x = 16 |- f (f x) evalto 65536 by E-App {
+        $env4, x = 16 |- f evalto $v6 by E-Var2 {
+          $env4 |- f evalto $v6 by E-Var1 {}
+        };
+        $env4, x = 16 |- f x evalto 256 by E-App {
+          $env4, x = 16 |- f evalto $v6 by E-Var2 {
+            $env4 |- f evalto $v6 by E-Var1 {}
+          };
+          $env4, x = 16 |- x evalto 16 by E-Var1 {};
+          $env1, x = 16 |- x * x evalto 256 by E-Times {
+            $env1, x = 16 |- x evalto 16 by E-Var1 {};
+            $env1, x = 16 |- x evalto 16 by E-Var1 {};
+            16 times 16 is 256 by B-Times {}
+          }
+        };
+        $env1, x = 256 |- x * x evalto 65536 by E-Times {
+          $env1, x = 256 |- x evalto 256 by E-Var1 {};
+          $env1, x = 256 |- x evalto 256 by E-Var1 {};
+          256 times 256 is 65536 by B-Times {};
+        }
+      }
+    }
+  }
+}
