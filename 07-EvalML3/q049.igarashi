@@ -1,0 +1,63 @@
+def $e1 = s k k 7;
+def $e2 = fun x -> fun y -> x;
+def $e3 = let k = $e2 in $e1;
+def $e4 = fun g -> fun x -> f x (g x);
+def $e7 = fun x -> f x (g x);
+def $e5 = fun f -> $e4;
+def $e6 = let s = $e5 in $e3;
+def $v1 = ()[fun f -> $e4];
+def $env1 = s = $v1;
+def $v2 = ($env1)[fun x -> fun y -> x];
+def $env2 = $env1, k = $v2;
+def $env3 = f = $v2;
+def $v4 = ($env3)[fun g -> $e7];
+def $env4 = $env3, g = $v2;
+def $v3 = ($env4)[fun x -> f x (g x)];
+def $env5 = $env4, x = 7;
+def $v5 = ($env1, x = 7)[fun y -> x];
+def $env6 = $env1, x = 7, y = $v5;
+
+|- let s = fun f -> fun g -> fun x -> f x (g x) in
+   let k = fun x -> fun y -> x in
+   s k k 7
+  evalto 7 by E-Let {
+  |- $e5 evalto $v1 by E-Fun {};
+  $env1 |- $e3 evalto 7 by E-Let {
+    $env1 |- $e2 evalto $v2 by E-Fun {};
+    $env2 |- $e1 evalto 7 by E-App {
+      $env2 |- s k k evalto $v3 by E-App {
+        $env2 |- s k evalto $v4 by E-App {
+          $env2 |- s evalto $v1 by E-Var2 {
+            $env1 |- s evalto $v1 by E-Var1 {}
+          };
+          $env2 |- k evalto $v2 by E-Var1 {};
+          f = $v2 |- $e4 evalto $v4 by E-Fun {}
+        };
+        $env2 |- k evalto $v2 by E-Var1 {};
+        $env3, g = $v2 |- $e7 evalto $v3 by E-Fun {}
+      };
+      $env2 |- 7 evalto 7 by E-Int {};
+      $env5 |- f x (g x) evalto 7 by E-App {
+        $env5 |- f x evalto $v5 by E-App {
+          $env5 |- f evalto $v2 by E-Var2 {
+            $env4 |- f evalto $v2 by E-Var2 {
+              $env3 |- f evalto $v2 by E-Var1 {}
+            }
+          };
+          $env5 |- x evalto 7 by E-Var1 {};
+          $env1, x = 7 |- fun y -> x evalto $v5 by E-Fun {}
+        };
+        $env5 |- g x evalto $v5 by E-App {
+          $env5 |- g evalto $v2 by E-Var2 {
+            $env4 |- g evalto $v2 by E-Var1 {}
+          };
+          $env5 |- x evalto 7 by E-Var1 {};
+          $env1, x = 7 |- fun y -> x evalto $v5 by E-Fun {}
+        };
+        $env6 |- x evalto 7 by E-Var2 {
+          $env1, x = 7 |- x evalto 7 by E-Var1 {}
+        }
+      }
+    }
+  }
+}
