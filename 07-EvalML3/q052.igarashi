@@ -1,0 +1,113 @@
+def $e1 = fun n -> if n < 1 then 0 else f n + sum f (n - 1);
+def $e2 = if n < 1 then 0 else f n + sum f (n - 1);
+def $v1 = ()[rec sum = fun f -> $e1];
+def $env1 = sum = $v1;
+def $v3 = ($env1)[fun x -> x * x];
+def $env2 = $env1, f = $v3;
+def $v2 = ($env2)[fun n -> $e2];
+def $env3 = $env2, n = 2;
+def $env4 = $env1, x = 2;
+def $env5 = $env2;
+def $env6 = $env2, n = 1;
+def $env7 = $env1, x = 1;
+def $env8 = $env2, n = 0;
+
+|- let rec sum = fun f -> fun n ->
+     if n < 1 then 0 else f n + sum f (n - 1) in 
+   sum (fun x -> x * x) 2
+  evalto 5 by E-LetRec {
+  $env1 |- sum (fun x -> x * x) 2 evalto 5 by E-App {
+    $env1 |- sum (fun x -> x * x) evalto $v2 by E-AppRec {
+      $env1 |- sum evalto $v1 by E-Var1 {};
+      $env1 |- fun x -> x * x evalto $v3 by E-Fun {};
+      $env2 |- $e1 evalto $v2 by E-Fun {}
+    };
+    $env1 |- 2 evalto 2 by E-Int {};
+    $env3 |- $e2 evalto 5 by E-IfF {
+      $env3 |- n < 1 evalto false by E-Lt {
+        $env3 |- n evalto 2 by E-Var1 {};
+        $env3 |- 1 evalto 1 by E-Int {};
+        2 less than 1 is false by B-Lt {}
+      };
+      $env3 |- f n + sum f (n - 1) evalto 5 by E-Plus {
+        $env3 |- f n evalto 4 by E-App {
+          $env3 |- f evalto $v3 by E-Var2 {
+            $env2 |- f evalto $v3 by E-Var1 {}
+          };
+          $env3 |- n evalto 2 by E-Var1 {};
+          $env4 |- x * x evalto 4 by E-Times {
+            $env4 |- x evalto 2 by E-Var1 {};
+            $env4 |- x evalto 2 by E-Var1 {};
+            2 times 2 is 4 by B-Times {}
+          }
+        };
+        $env3 |- sum f (n - 1) evalto 1 by E-App {
+          $env3 |- sum f evalto $v2 by E-AppRec {
+            $env3 |- sum evalto $v1 by E-Var2 {
+              $env2 |- sum evalto $v1 by E-Var2 {
+                $env1 |- sum evalto $v1 by E-Var1 {}
+              }
+            };
+            $env3 |- f evalto $v3 by E-Var2 {
+              $env2 |- f evalto $v3 by E-Var1 {}
+            };
+            $env5 |- $e1 evalto $v2 by E-Fun {}
+          };
+          $env3 |- n - 1 evalto 1 by E-Minus {
+            $env3 |- n evalto 2 by E-Var1 {};
+            $env3 |- 1 evalto 1 by E-Int {};
+            2 minus 1 is 1 by B-Minus {}
+          };
+          $env6 |- $e2 evalto 1 by E-IfF {
+            $env6 |- n < 1 evalto false by E-Lt {
+              $env6 |- n evalto 1 by E-Var1 {};
+              $env6 |- 1 evalto 1 by E-Int {};
+              1 less than 1 is false by B-Lt {}
+            };
+            $env6 |- f n + sum f (n - 1) evalto 1 by E-Plus {
+              $env6 |- f n evalto 1 by E-App {
+                $env6 |- f evalto $v3 by E-Var2 {
+                  $env2 |- f evalto $v3 by E-Var1 {}
+                };
+                $env6 |- n evalto 1 by E-Var1 {};
+                $env7 |- x * x evalto 1 by E-Times {
+                  $env7 |- x evalto 1 by E-Var1 {};
+                  $env7 |- x evalto 1 by E-Var1 {};
+                  1 times 1 is 1 by B-Times {}
+                }
+              };
+              $env6 |- sum f (n - 1) evalto 0 by E-App {
+                $env6 |- sum f evalto $v2 by E-AppRec {
+                  $env6 |- sum evalto $v1 by E-Var2 {
+                    $env2 |- sum evalto $v1 by E-Var2 {
+                      $env1 |- sum evalto $v1 by E-Var1 {}
+                    }
+                  };
+                  $env6 |- f evalto $v3 by E-Var2 {
+                    $env2 |- f evalto $v3 by E-Var1 {}
+                  };
+                  $env2 |- $e1 evalto $v2 by E-Fun {}
+                };
+                $env6 |- n - 1 evalto 0 by E-Minus {
+                  $env6 |- n evalto 1 by E-Var1 {};
+                  $env6 |- 1 evalto 1 by E-Int {};
+                  1 minus 1 is 0 by B-Minus {}
+                };
+                $env8 |- $e2 evalto 0 by E-IfT {
+                  $env8 |- n < 1 evalto true by E-Lt {
+                    $env8 |- n evalto 0 by E-Var1 {};
+                    $env8 |- 1 evalto 1 by E-Int {};
+                    0 less than 1 is true by B-Lt {}
+                  };
+                  $env8 |- 0 evalto 0 by E-Int {}
+                }
+              };
+              1 plus 0 is 1 by B-Plus {}
+            }
+          }
+        };
+        4 plus 1 is 5 by B-Plus {}
+      }
+    }
+  }
+}
