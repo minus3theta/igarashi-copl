@@ -1,0 +1,55 @@
+def $e1 = match x with [] -> 0 | a :: b -> a;
+def $e2 = f (4::[]) + f [] + f (1 :: 2 :: 3 :: []);
+def $v1 = ()[fun x -> $e1];
+def $env1 = f = $v1;
+def $env2 = x = [];
+def $v2 = 1 :: 2 :: 3 :: [];
+def $env3 = x = $v2, a = 1, b = 2 :: 3 :: [];
+
+|- let f = fun x -> match x with [] -> 0 | a :: b -> a in
+    f (4::[]) + f [] + f (1 :: 2 :: 3 :: [])
+   evalto 5 by E-Let {
+  |- fun x -> $e1 evalto $v1 by E-Fun {};
+  $env1 |- $e2 evalto 5 by E-Plus {
+    $env1 |- f (4::[]) + f [] evalto 4 by E-Plus {
+      $env1 |- f (4::[]) evalto 4 by E-App {
+        $env1 |- f evalto $v1 by E-Var {};
+        $env1 |- 4::[] evalto 4::[] by E-Cons {
+          $env1 |- 4 evalto 4 by E-Int {};
+          $env1 |- [] evalto [] by E-Nil {}
+        };
+        x = 4::[] |- $e1 evalto 4 by E-MatchCons {
+          x = 4::[] |- x evalto 4::[] by E-Var {};
+          x = 4 :: [], a = 4, b = [] |- a evalto 4 by E-Var {}
+        }
+      };
+      $env1 |- f [] evalto 0 by E-App {
+        $env1 |- f evalto $v1 by E-Var {};
+        $env1 |- [] evalto [] by E-Nil {};
+        $env2 |- $e1 evalto 0 by E-MatchNil {
+          $env2 |- x evalto [] by E-Var {};
+          $env2 |- 0 evalto 0 by E-Int {}
+        }
+      };
+      4 plus 0 is 4 by B-Plus {}
+    };
+    $env1 |- f (1 :: 2 :: 3 :: []) evalto 1 by E-App {
+      $env1 |- f evalto $v1 by E-Var {};
+      $env1 |- 1 :: 2 :: 3 :: [] evalto 1 :: 2 :: 3 :: [] by E-Cons {
+        $env1 |- 1 evalto 1 by E-Int {};
+        $env1 |- 2 :: 3 :: [] evalto 2 :: 3 :: [] by E-Cons {
+          $env1 |- 2 evalto 2 by E-Int {};
+          $env1 |- 3 :: [] evalto 3 :: [] by E-Cons {
+            $env1 |- 3 evalto 3 by E-Int {};
+            $env1 |- [] evalto [] by E-Nil {}
+          }
+        }
+      };
+      x = $v2 |- $e1 evalto 1 by E-MatchCons {
+        x = $v2 |- x evalto $v2 by E-Var {};
+        $env3 |- a evalto 1 by E-Var {}
+      }
+    };
+    4 plus 1 is 5 by B-Plus {}
+  }
+}
