@@ -1,0 +1,32 @@
+def $e1 = letcc k in 1 + k 2;
+def $k1 = {3 + _};
+def $env1 = k = [$k1];
+
+|- 3 + (letcc k in 1 + k 2) evalto 5 by E-BinOp {
+  |- 3 >> {|- _ + $e1} evalto 5 by E-Int {
+    3 => {|- _ + $e1} evalto 5 by C-EvalR {
+      |- $e1 >> {3 + _} evalto 5 by E-LetCc {
+        k = [$k1] |- 1 + k 2 >> $k1 evalto 5 by E-BinOp {
+          $env1 |- 1 >> {$env1 |- _ + k 2} >> $k1 evalto 5 by E-Int {
+            1 => {$env1 |- _ + k 2} >> $k1 evalto 5 by C-EvalR {
+              $env1 |- k 2 >> {1 + _} >> $k1 evalto 5 by E-App {
+                $env1 |- k >> {$env1 |- _ 2} >> {1 + _} >> $k1 evalto 5 by E-Var {
+                  [$k1] => {$env1 |- _ 2} >> {1 + _} >> $k1 evalto 5 by C-EvalArg {
+                    $env1 |- 2 >> {[$k1] _} >> {1 + _} >> $k1 evalto 5 by E-Int {
+                      2 => {[$k1] _} >> {1 + _} >> $k1 evalto 5 by C-EvalFunC {
+                        2 => $k1 evalto 5 by C-Plus {
+                          3 plus 2 is 5 by B-Plus {};
+                          5 => _ evalto 5 by C-Ret {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
