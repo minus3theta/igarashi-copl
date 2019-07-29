@@ -1,0 +1,160 @@
+def $e1 = match l with [] -> false | x :: l -> if x < 0 then true else findneg l;
+def $v1 = ()[rec findneg = fun l -> $e1];
+def $e2 = findneg (1 :: 2 :: -3 :: 4 :: []);
+def $env1 = findneg = $v1;
+def $e3 = 1 :: 2 :: -3 :: 4 :: [];
+def $e4 = 2 :: -3 :: 4 :: [];
+def $k1 = {1 :: _} >> {$v1 _};
+def $e5 = -3 :: 4 :: [];
+def $k2 = {2 :: _} >> $k1;
+def $k3 = {-3 :: _} >> $k2;
+def $v2 = 1 :: 2 :: -3 :: 4 :: [];
+def $env2 = $env1, l = $v2;
+def $e6 = if x < 0 then true else findneg l;
+def $k4 = {$env2 |- match _ with [] -> false | x :: l -> $e6};
+def $v3 = 2 :: -3 :: 4 :: [];
+def $env3 = $env2, x = 1, l = $v3;
+def $k5 = {$env3 |- if _ then true else findneg l};
+def $env4 = $env1, l = $v3;
+def $k6 = {$env4 |- match _ with [] -> false | x :: l -> $e6};
+def $v4 = -3 :: 4 :: [];
+def $env5 = $env4, x = 2, l = $v4;
+def $k7 = {$env5 |- if _ then true else findneg l};
+def $env6 = $env1, l = $v4;
+def $k8 = {$env6 |- match _ with [] -> false | x :: l -> $e6};
+def $env7 = $env6, x = -3, l = 4 :: [];
+def $k9 = {$env7 |- if _ then true else findneg l};
+
+|- let rec findneg = fun l -> match l with
+       [] -> false
+     | x :: l -> if x < 0 then true else findneg l
+   in findneg (1 :: 2 :: -3 :: 4 :: []) evalto true by E-LetRec {
+  $env1 |- $e2 evalto true by E-App {
+    $env1 |- findneg >> {$env1 |- _ $e3} evalto true by E-Var {
+      $v1 => {$env1 |- _ $e3} evalto true by C-EvalArg {
+        $env1 |- $e3 >> {$v1 _} evalto true by E-Cons {
+          $env1 |- 1 >> {$env1 |- _ :: $e4} >> {$v1 _} evalto true by E-Int {
+            1 => {$env1 |- _ :: $e4} >> {$v1 _} evalto true by C-EvalConsR {
+              $env1 |- $e4 >> {1 :: _} >> {$v1 _} evalto true by E-Cons {
+                $env1 |- 2 >> {$env1 |- _ :: $e5} >> $k1 evalto true by E-Int {
+                  2 => {$env1 |- _ :: $e5} >> $k1 evalto true by C-EvalConsR {
+                    $env1 |- $e5 >> $k2 evalto true by E-Cons {
+                      $env1 |- -3 >> {$env1 |- _ :: 4 :: []} >> $k2 evalto true by E-Int {
+                        -3 => {$env1 |- _ :: 4 :: []} >> $k2 evalto true by C-EvalConsR {
+                          $env1 |- 4 :: [] >> {-3 :: _} >> $k2 evalto true by E-Cons {
+                            $env1 |- 4 >> {$env1 |- _ :: []} >> $k3 evalto true by E-Int {
+                              4 => {$env1 |- _ :: []} >> $k3 evalto true by C-EvalConsR {
+                                $env1 |- [] >> {4 :: _} >> $k3 evalto true by E-Nil {
+                                  [] => {4 :: _} >> $k3 evalto true by C-Cons {
+                                    4 :: [] => $k3 evalto true by C-Cons {
+                                      -3 :: 4 :: [] => $k2 evalto true by C-Cons {
+                                        2 :: -3 :: 4 :: [] => $k1 evalto true by C-Cons {
+                                          1 :: 2 :: -3 :: 4 :: [] => {$v1 _} evalto true by C-EvalFunR {
+                                            $env2 |- $e1 evalto true by E-Match {
+                                              $env2 |- l >> $k4 evalto true by E-Var {
+                                                $v2 => $k4 evalto true by C-MatchCons {
+                                                  $env3 |- $e6 evalto true by E-If {
+                                                    $env3 |- x < 0 >> $k5 evalto true by E-BinOp {
+                                                      $env3 |- x >> {$env3 |- _ < 0} >> $k5 evalto true by E-Var {
+                                                        1 => {$env3 |- _ < 0} >> $k5 evalto true by C-EvalR {
+                                                          $env3 |- 0 >> {1 < _} >> $k5 evalto true by E-Int {
+                                                            0 => {1 < _} >> $k5 evalto true by C-Lt {
+                                                              1 less than 0 is false by B-Lt {};
+                                                              false => $k5 evalto true by C-IfF {
+                                                                $env3 |- findneg l evalto true by E-App {
+                                                                  $env3 |- findneg >> {$env3 |- _ l} evalto true by E-Var {
+                                                                    $v1 => {$env3 |- _ l} evalto true by C-EvalArg {
+                                                                      $env3 |- l >> {$v1 _} evalto true by E-Var {
+                                                                        $v3 => {$v1 _} evalto true by C-EvalFunR {
+                                                                          $env4 |- $e1 evalto true by E-Match {
+                                                                            $env4 |- l >> $k6 evalto true by E-Var {
+                                                                              $v3 => $k6 evalto true by C-MatchCons {
+                                                                                $env5 |- $e6 evalto true by E-If {
+                                                                                  $env5 |- x < 0 >> $k7 evalto true by E-BinOp {
+                                                                                    $env5 |- x >> {$env5 |- _ < 0} >> $k7 evalto true by E-Var {
+                                                                                      2 => {$env5 |- _ < 0} >> $k7 evalto true by C-EvalR {
+                                                                                        $env5 |- 0 >> {2 < _} >> $k7 evalto true by E-Int {
+                                                                                          0 => {2 < _} >> $k7 evalto true by C-Lt {
+                                                                                            2 less than 0 is false by B-Lt {};
+                                                                                            false => $k7 evalto true by C-IfF {
+                                                                                              $env5 |- findneg l evalto true by E-App {
+                                                                                                $env5 |- findneg >> {$env5 |- _ l} evalto true by E-Var {
+                                                                                                  $v1 => {$env5 |- _ l} evalto true by C-EvalArg {
+                                                                                                    $env5 |- l >> {$v1 _} evalto true by E-Var {
+                                                                                                      $v4 => {$v1 _} evalto true by C-EvalFunR {
+                                                                                                        $env6 |- $e1 evalto true by E-Match {
+                                                                                                          $env6 |- l >> $k8 evalto true by E-Var {
+                                                                                                            $v4 => $k8 evalto true by C-MatchCons {
+                                                                                                              $env7 |- $e6 evalto true by E-If {
+                                                                                                                $env7 |- x < 0 >> $k9 evalto true by E-BinOp {
+                                                                                                                  $env7 |- x >> {$env7 |- _ < 0} >> $k9 evalto true by E-Var {
+                                                                                                                    -3 => {$env7 |- _ < 0} >> $k9 evalto true by C-EvalR {
+                                                                                                                      $env7 |- 0 >> {-3 < _} >> $k9 evalto true by E-Int {
+                                                                                                                        0 => {-3 < _} >> $k9 evalto true by C-Lt {
+                                                                                                                          -3 less than 0 is true by B-Lt {};
+                                                                                                                          true => $k9 evalto true by C-IfT {
+                                                                                                                            $env7 |- true evalto true by E-Bool {
+                                                                                                                              true => _ evalto true by C-Ret {}
+                                                                                                                            }
+                                                                                                                          }
+                                                                                                                        }
+                                                                                                                      }
+                                                                                                                    }
+                                                                                                                  }
+                                                                                                                }
+                                                                                                              }
+                                                                                                            }
+                                                                                                          }
+                                                                                                        }
+                                                                                                      }
+                                                                                                    }
+                                                                                                  }
+                                                                                                }
+                                                                                              }
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
