@@ -1,0 +1,133 @@
+def $e1 = n * fact (n - 1);
+def $e2 = if n < 2 then 1 else $e1;
+def $v1 = ()[rec fact = fun n -> $e2];
+def $env1 = fact = $v1, n = 3;
+def $k1 = {$env1 |- if _ then 1 else $e1};
+def $k2 = {$v1 _} >> {3 * _};
+def $env2 = fact = $v1, n = 2;
+def $k3 = {$env2 |- if _ then 1 else $e1} >> {3 * _};
+def $k4 = {$env2 |- _ * fact (n - 1)} >> {3 * _};
+def $k5 = {2 * _} >> {3 * _};
+def $k6 = {$v1 _} >> $k5;
+def $env3 = fact = $v1, n = 1;
+def $k7 = {$env3 |- if _ then 1 else $e1} >> $k5;
+
+|- let rec fact = fun n ->
+   if n < 2 then 1 else n * fact (n - 1) in
+   fact 3
+  evalto 6 by E-LetRec {
+  fact = $v1 |- fact 3 evalto 6 by E-App {
+    fact = $v1 |- fact >> {fact = $v1 |- _ 3} evalto 6 by E-Var {
+      $v1 => {fact = $v1 |- _ 3} evalto 6 by C-EvalArg {
+        fact = $v1 |- 3 >> {$v1 _} evalto 6 by E-Int {
+          3 => {$v1 _} evalto 6 by C-EvalFunR {
+            $env1 |- $e2 evalto 6 by E-If {
+              $env1 |- n < 2 >> $k1 evalto 6 by E-BinOp {
+                $env1 |- n >> {$env1 |- _ < 2} >> $k1 evalto 6 by E-Var {
+                  3 => {$env1 |- _ < 2} >> $k1 evalto 6 by C-EvalR {
+                    $env1 |- 2 >> {3 < _} >> $k1 evalto 6 by E-Int {
+                      2 => {3 < _} >> $k1 evalto 6 by C-Lt {
+                        3 less than 2 is false by B-Lt {};
+                        false => $k1 evalto 6 by C-IfF {
+                          $env1 |- $e1 evalto 6 by E-BinOp {
+                            $env1 |- n >> {$env1 |- _ * fact (n - 1)} evalto 6 by E-Var {
+                              3 => {$env1 |- _ * fact (n - 1)} evalto 6 by C-EvalR {
+                                $env1 |- fact (n - 1) >> {3 * _} evalto 6 by E-App {
+                                  $env1 |- fact >> {$env1 |- _ (n - 1)} >> {3 * _} evalto 6 by E-Var {
+                                    $v1 => {$env1 |- _ (n - 1)} >> {3 * _} evalto 6 by C-EvalArg {
+                                      $env1 |- n - 1 >> $k2 evalto 6 by E-BinOp {
+                                        $env1 |- n >> {$env1 |- _ - 1} >> $k2 evalto 6 by E-Var {
+                                          3 => {$env1 |- _ - 1} >> $k2 evalto 6 by C-EvalR {
+                                            $env1 |- 1 >> {3 - _} >> $k2 evalto 6 by E-Int {
+                                              1 => {3 - _} >> $k2 evalto 6 by C-Minus {
+                                                3 minus 1 is 2 by B-Minus {};
+                                                2 => $k2 evalto 6 by C-EvalFunR {
+                                                  $env2 |- $e2 >> {3 * _} evalto 6 by E-If {
+                                                    $env2 |- n < 2 >> $k3 evalto 6 by E-BinOp {
+                                                      $env2 |- n >> {$env2 |- _ < 2} >> $k3 evalto 6 by E-Var {
+                                                        2 => {$env2 |- _ < 2} >> $k3 evalto 6 by C-EvalR {
+                                                          $env2 |- 2 >> {2 < _} >> $k3 evalto 6 by E-Int {
+                                                            2 => {2 < _} >> $k3 evalto 6 by C-Lt {
+                                                              2 less than 2 is false by B-Lt {};
+                                                              false => $k3 evalto 6 by C-IfF {
+                                                                $env2 |- $e1 >> {3 * _} evalto 6 by E-BinOp {
+                                                                  $env2 |- n >> $k4 evalto 6 by E-Var {
+                                                                    2 => $k4 evalto 6 by C-EvalR {
+                                                                      $env2 |- fact (n - 1) >> {2 * _} >> {3 * _} evalto 6 by E-App {
+                                                                        $env2 |- fact >> {$env2 |- _ (n - 1)} >> $k5 evalto 6 by E-Var {
+                                                                          $v1 => {$env2 |- _ (n - 1)} >> $k5 evalto 6 by C-EvalArg {
+                                                                            $env2 |- n - 1 >> $k6 evalto 6 by E-BinOp {
+                                                                              $env2 |- n >> {$env2 |- _ - 1} >> $k6 evalto 6 by E-Var {
+                                                                                2 => {$env2 |- _ - 1} >> $k6 evalto 6 by C-EvalR {
+                                                                                  $env2 |- 1 >> {2 - _} >> $k6 evalto 6 by E-Int {
+                                                                                    1 => {2 - _} >> $k6 evalto 6 by C-Minus {
+                                                                                      2 minus 1 is 1 by B-Minus {};
+                                                                                      1 => $k6 evalto 6 by C-EvalFunR {
+                                                                                        $env3 |- $e2 >> $k5 evalto 6 by E-If {
+                                                                                          $env3 |- n < 2 >> $k7 evalto 6 by E-BinOp {
+                                                                                            $env3 |- n >> {$env3 |- _ < 2} >> $k7 evalto 6 by E-Var {
+                                                                                              1 => {$env3 |- _ < 2} >> $k7 evalto 6 by C-EvalR {
+                                                                                                $env3 |- 2 >> {1 < _} >> $k7 evalto 6 by E-Int {
+                                                                                                  2 => {1 < _} >> $k7 evalto 6 by C-Lt {
+                                                                                                    1 less than 2 is true by B-Lt {};
+                                                                                                    true => $k7 evalto 6 by C-IfT {
+                                                                                                      $env3 |- 1 >> $k5 evalto 6 by E-Int {
+                                                                                                        1 => $k5 evalto 6 by C-Times {
+                                                                                                          2 times 1 is 2 by B-Times {};
+                                                                                                          2 => {3 * _} evalto 6 by C-Times {
+                                                                                                            3 times 2 is 6 by B-Times {};
+                                                                                                            6 => _ evalto 6 by C-Ret {}
+                                                                                                          }
+                                                                                                        }
+                                                                                                      }
+                                                                                                    }
+                                                                                                  }
+                                                                                                }
+                                                                                              }
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
