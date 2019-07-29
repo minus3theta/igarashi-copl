@@ -1,0 +1,41 @@
+def $v1 = ()[rec fact = fun n -> if n < 2 then 1 else n * fact (n - 1)];
+def $env1 = fact = $v1;
+def $e1 = letcc k in 1 + k 2 + fact 100;
+def $e2 = 1 + k 2 + fact 100;
+def $env2 = $env1, k = [{3 + _}];
+def $k1 = {$env2 |- _ + fact 100} >> {3 + _};
+
+|- let rec fact = fun n ->
+   if n < 2 then 1 else n * fact (n - 1) in
+   3 + (letcc k in 1 + k 2 + fact 100) evalto 5 by E-LetRec {
+  $env1 |- 3 + (letcc k in 1 + k 2 + fact 100) evalto 5 by E-BinOp {
+    $env1 |- 3 >> {$env1 |- _ + (letcc k in 1 + k 2 + fact 100)} evalto 5 by E-Int {
+      3 => {$env1 |- _ + $e1} evalto 5 by C-EvalR {
+        $env1 |- $e1 >> {3 + _} evalto 5 by E-LetCc {
+          $env2 |- $e2 >> {3 + _} evalto 5 by E-BinOp {
+            $env2 |- 1 + k 2 >> $k1 evalto 5 by E-BinOp {
+              $env2 |- 1 >> {$env2 |- _ + k 2} >> $k1 evalto 5 by E-Int {
+                1 => {$env2 |- _ + k 2} >> $k1 evalto 5 by C-EvalR {
+                  $env2 |- k 2 >> {1 + _} >> $k1 evalto 5 by E-App {
+                    $env2 |- k >> {$env2 |- _ 2} >> {1 + _} >> $k1 evalto 5 by E-Var {
+                      [{3 + _}] => {$env2 |- _ 2} >> {1 + _} >> $k1 evalto 5 by C-EvalArg {
+                        $env2 |- 2 >> {[{3 + _}] _} >> {1 + _} >> $k1 evalto 5 by E-Int {
+                          2 => {[{3 + _}] _} >> {1 + _} >> $k1 evalto 5 by C-EvalFunC {
+                            2 => {3 + _} evalto 5 by C-Plus {
+                              3 plus 2 is 5 by B-Plus {};
+                              5 => _ evalto 5 by C-Ret {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
